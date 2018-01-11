@@ -463,6 +463,7 @@ public class MainActivity extends AppCompatActivity {
     public void set_activity(View view){
         Intent it=new Intent(this,SettingActivity.class);
         startActivity(it);
+        //Document this
     }
 
     //Dialog BOX
