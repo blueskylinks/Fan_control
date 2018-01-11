@@ -16,6 +16,7 @@ import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -24,6 +25,7 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -47,9 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter;
     BluetoothLeScanner scanner;
     private BluetoothDevice ble_device;
-
     ScanRecord scan_rec;
-   // public BluetoothGattCharacteristic characteristicTX;
     String message;
     String message1;
     String message2;
@@ -81,18 +81,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
         startscand();
-
     }
 
+    @Override
     protected void onPause() {
         super.onPause();
         button  =findViewById(R.id.button8);
         String buttontext= (String) button.getText();
-        if (buttontext=="Connected") {
-       disconnect();
-            //startscand();
-            }
-            else return;
+        if (buttontext=="Connected") disconnect();
+        else return;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -122,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-      //  startscand();
         return true;
     }
 
@@ -162,7 +158,6 @@ public class MainActivity extends AppCompatActivity {
             for (int i=0;i<sc1.length; i++){
                 Log.i("Data-----:", String.valueOf(sc1[i]));
                 lr[i]=sc1[i];
-                Log.i("Data-----:", String.valueOf(lr[i]));
             }
             ble_device = result.getDevice();
             if(st!=lr[2]){
@@ -171,6 +166,8 @@ public class MainActivity extends AppCompatActivity {
             st=lr[2];
         }
     };
+
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void stopscand() {
         Log.i("BLE-----", "Stop Scanning");
@@ -187,19 +184,19 @@ public class MainActivity extends AppCompatActivity {
             Log.i("BLE", "Device Connected...");
             button.setText("Connected");
         }
+        else open();
         try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-
     }
 
     public void disconnect() {
      mGatt.disconnect();
-
     }
+
+
     //===========================================================================
     public BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
@@ -252,10 +249,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
     };
+
+
     public void fan_control_up(View view) {
-        button  =findViewById(R.id.button8);
-        String buttontext= (String) button.getText();
-        if (buttontext=="Connected") {
+        button = findViewById(R.id.button8);
+        String buttontext = (String) button.getText();
+        if (buttontext == "Connected") {
             message = "x";
             characteristicTX.setValue(message);
             mGatt.writeCharacteristic(characteristicTX);
@@ -267,24 +266,20 @@ public class MainActivity extends AppCompatActivity {
             id[4] = findViewById(R.id.id5);
             id[5] = findViewById(R.id.id6);
             final TextView textView = findViewById(R.id.textView4);
-
             if (count < 6) {
-
-
                 for (int i = 0; i <= count; i++) {
                     if (count == i) {
                         id[i].getBackground().setColorFilter(Color.RED, PorterDuff.Mode.MULTIPLY);
-                        textView.setText(String.valueOf(count));
+                        textView.setText(String.valueOf(count+1));
                     }
                 }
                 count = count + 1;
-            } else {
-                return;
-            }
+            } else  return;
+        } else  open();
 
-        } else
-            return;
-        }
+    }
+
+
     public void fan_control_down(View view){
         button  =findViewById(R.id.button8);
         String buttontext= (String) button.getText();
@@ -302,7 +297,6 @@ public class MainActivity extends AppCompatActivity {
             final TextView textView = findViewById(R.id.textView4);
             if (count >= 0) {
                 count = count - 1;
-
                 for (int i = 0; i <= count; i++) {
                     if (count == i) {
                         id[i].getBackground().clearColorFilter();
@@ -310,11 +304,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-            } else {
-                return;
-            }
+            } else return;
         }
-        else return;
+        else  open();
 
     }
 
@@ -336,30 +328,26 @@ public class MainActivity extends AppCompatActivity {
            }
 
         } else return;
-        if (sc1[0]==1) {
+        if (sc1[0]==1)
+        {
+            message1="a";
             b1.setBackgroundColor(Color.TRANSPARENT);
         }
-        else  if(sc1[0]==0) { b1.setBackgroundColor(Color.RED);}
+        else if(sc1[0]==0)  {message1="A";  b1.setBackgroundColor(Color.RED);}
 
     }
-    public void set_activity(View view){
-        Intent it=new Intent(this,SettingActivity.class);
-        startActivity(it);
-        //Document this
 
-    }
+
     public void change_color1(View view) {
         button = findViewById(R.id.button8);
         String buttontext = (String) button.getText();
         if (buttontext == "Connected") {
             b1 = findViewById(R.id.button1);
-            //      connect_device();
-            if (message1 == "a") {
+            if (message1=="a") {
                 message1 = "A";
                 characteristicTX.setValue(message1);
                 mGatt.writeCharacteristic(characteristicTX);
                 b1.setBackgroundColor(Color.RED);
-
             }
             else {
                 message1 = "a";
@@ -368,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
                 b1.setBackgroundColor(Color.TRANSPARENT);
             }
         }
-        else return;
+        else open();
    }
 
     public void change_color2(View view){
@@ -381,17 +369,16 @@ public class MainActivity extends AppCompatActivity {
                 message2 = "B";
                 characteristicTX.setValue(message2);
                 mGatt.writeCharacteristic(characteristicTX);
-
             } else {
                 b1.setBackgroundColor(Color.TRANSPARENT);
                 message2 = "b";
                 characteristicTX.setValue(message2);
                 mGatt.writeCharacteristic(characteristicTX);
             }
-
         }
-        else return;
+        else open();
     }
+
     public void change_color3(View view){
         button  =findViewById(R.id.button8);
         String buttontext= (String) button.getText();
@@ -402,17 +389,16 @@ public class MainActivity extends AppCompatActivity {
                 message3 = "C";
                 characteristicTX.setValue(message3);
                 mGatt.writeCharacteristic(characteristicTX);
-
             } else {
                 b1.setBackgroundColor(Color.TRANSPARENT);
                 message3 = "c";
                 characteristicTX.setValue(message3);
                 mGatt.writeCharacteristic(characteristicTX);
             }
-
         }
-        else return;
+        else open();
     }
+
     public void change_color4(View view){
         button  =findViewById(R.id.button8);
         String buttontext= (String) button.getText();
@@ -423,7 +409,6 @@ public class MainActivity extends AppCompatActivity {
                 message4 = "D";
                 characteristicTX.setValue(message4);
                 mGatt.writeCharacteristic(characteristicTX);
-
             } else {
                 b1.setBackgroundColor(Color.TRANSPARENT);
                 message4 = "d";
@@ -431,8 +416,9 @@ public class MainActivity extends AppCompatActivity {
                 mGatt.writeCharacteristic(characteristicTX);
             }
         }
-        else return;
+        else open();
     }
+
     public void change_color5(View view){
         button  =findViewById(R.id.button8);
         String buttontext= (String) button.getText();
@@ -451,8 +437,9 @@ public class MainActivity extends AppCompatActivity {
                 mGatt.writeCharacteristic(characteristicTX);
             }
         }
-        else return;
+        else open();
     }
+
     public void change_color6(View view){
         button  =findViewById(R.id.button8);
         String buttontext= (String) button.getText();
@@ -463,7 +450,6 @@ public class MainActivity extends AppCompatActivity {
                 message6 = "F";
                 characteristicTX.setValue(message6);
                 mGatt.writeCharacteristic(characteristicTX);
-
             } else {
                 b1.setBackgroundColor(Color.TRANSPARENT);
                 message6 = "f";
@@ -471,6 +457,26 @@ public class MainActivity extends AppCompatActivity {
                 mGatt.writeCharacteristic(characteristicTX);
             }
         }
-        else  return;
+        else  open();
+    }
+    //Setting Button
+    public void set_activity(View view){
+        Intent it=new Intent(this,SettingActivity.class);
+        startActivity(it);
+    }
+
+    //Dialog BOX
+    public void open() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage("Device is not connected");
+        alertDialogBuilder.setPositiveButton("OK",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        return;
+                    }
+                });
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 }
